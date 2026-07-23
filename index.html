@@ -91,8 +91,22 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
 .card:active{transform:scale(.988)}
 .card.event{border-left-color:var(--event)}
 .card.plain{border-left-color:#C5CCC5}
-.timegrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;align-items:start}
-.timegrid>div{min-width:0}
+.mealrow{display:flex;align-items:baseline;gap:8px;padding:7px 0;border-bottom:1px dashed var(--line)}
+.mealrow:last-child{border-bottom:none;padding-bottom:0}
+.mealrow:first-child{padding-top:0}
+.mtag{
+  flex:0 0 auto;font-size:11px;font-weight:800;padding:3px 7px;border-radius:6px;
+  background:var(--ink);color:#fff;letter-spacing:.02em;
+}
+.mtimes{display:flex;flex-wrap:wrap;gap:4px 11px;flex:1;min-width:0}
+.mtimes span{font-size:11.5px;font-weight:600;color:var(--ink-soft);white-space:nowrap}
+.mtimes b{font-size:14px;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums;margin-left:2px}
+.gapnote{color:var(--event) !important}
+.gapnote b{color:var(--event) !important}
+.mcount{
+  flex:0 0 auto;font-size:13px;font-weight:800;color:var(--ink);
+  font-variant-numeric:tabular-nums;
+}
 .card.off{background:#F7F8F6}
 .card.off .cname,.card.off .t{color:#6B7A87}
 .card.inactive{opacity:.5;filter:grayscale(1)}
@@ -192,6 +206,9 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
 .note p{font-size:15px;font-weight:600;line-height:1.5;word-break:keep-all}
 
 /* 사진 */
+.vid{position:relative;width:100%;aspect-ratio:16/9;border-radius:10px;overflow:hidden;background:#000;margin-bottom:8px}
+.vid:last-child{margin-bottom:0}
+.vid iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
 .shots{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .shot{position:relative;aspect-ratio:4/3;border-radius:10px;overflow:hidden;background:#E4E8E3;display:block}
 .shot img{width:100%;height:100%;object-fit:cover;display:block}
@@ -241,8 +258,8 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
     <div class="today" id="todayLabel"></div>
   </div>
   <div class="tabs">
-    <button class="tab on" data-view="list">목록</button>
-    <button class="tab" data-view="map">지도</button>
+    <button class="tab on" data-view="map">지도</button>
+    <button class="tab" data-view="list">목록</button>
   </div>
 </div>
 
@@ -255,14 +272,14 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
 
 <div class="filters" id="filters"></div>
 
-<div id="listView">
+<div id="listView" class="hidden">
   <div class="wrap">
     <div class="count" id="count"></div>
     <div id="cards"></div>
   </div>
 </div>
 
-<div id="mapView" class="hidden">
+<div id="mapView">
   <div class="legend">
     <span><i class="dot" style="background:#1F6F5C"></i>정기</span>
     <span><i class="dot" style="background:#B8730B"></i>이벤트</span>
@@ -287,16 +304,16 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
 /* ════════════════════════════════════════════════
    설정 — 실제 운영 시 여기 두 줄만 채우면 됩니다
    ════════════════════════════════════════════════ */
-const SHEET_CSV_URL = "";      // 구글 시트 → 파일 → 공유 → 웹에 게시 → CSV 주소
+const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRllKWAeSG0jcscWt_pNlFdbv7YrjtruLj3m1xIf7BlXt3yQl2ItdX2COx5A2hKjzcCQPMArrHztfWh/pub?gid=1504216616&single=true&output=csv";      // 구글 시트 → 파일 → 공유 → 웹에 게시 → CSV 주소
 const PHOTO_BASE    = "photos/"; // 사진 폴더 경로
 
 /* 시트 게시 전까지 쓰는 예시 데이터 */
 const SAMPLE = [
-  {폴더명:"asml", 업체명:"asml", 계약:"정기", 상태:"활성", 타입1:"스페셜", 타입2:"이동급식", 운영요일:"월화수목", 도착시간:"10:40", 식사시간:"11:30~13:00", 회수시간:"13:00이후", 식수:"80", 주소:"경기 이천시 대월면 대월로 866", 담당기사:"홍종철", 진입방법:"정문으로 진입", 주차:"건물 뒤편", 세팅장소:"1층 카페테리아", 세팅동선:"건물뒤편->뒷문->1층카페테리아", 퇴식구:"1층카페테리아", 특이사항:"배식도우미 2명"},
+  {폴더명:"asml", 업체명:"asml", 계약:"정기", 상태:"활성", 타입1:"스페셜", 타입2:"이동급식", 운영요일:"월화수목", 끼니:"중식", 중식_도착:"10:40", 중식_배식:"11:30~13:00", 중식_회수:"13:00이후", 중식_식수:"80", 주소:"경기 이천시 대월면 대월로 866", 담당기사:"홍종철", 진입주차:"정문으로 진입 / 건물 뒤편", 세팅:"건물뒤편->뒷문->1층카페테리아", 퇴식회수:"1층카페테리아", 특이사항:"배식도우미 2명"},
   {폴더명:"사무실", 업체명:"사무실", 주소:"경기 하남시 서하남로451번길 13-23"},
-  {폴더명:"엠브레인", 업체명:"엠브레인", 계약:"정기", 상태:"활성", 타입1:"베이직+", 타입2:"이동급식", 운영요일:"월화수목금", 도착시간:"10:30", 식사시간:"12:00~13:00", 회수시간:"13:00이후", 식수:"80~60", 주소:"서울 서초구 명달로 9", 담당기사:"전지선", 진입방법:"지하주차장(지하4층 주차)", 주차:"지하주차장(지하4층 주차)", 출입절차:"없음", 세팅장소:"1층 카페테리아", 세팅동선:"지하4층->엘베->1층 카페테리아", 퇴식구:"1층", 특이사항:"배식도우미 1명"},
-  {폴더명:"삼성안과의원", 업체명:"삼성안과", 계약:"정기", 상태:"활성", 타입1:"베이직+", 타입2:"이동급식", 운영요일:"월화수목금", 도착시간:"09:00이후", 식사시간:"12:00~14:00", 회수시간:"14:00이후", 식수:"25~28", 주소:"서울 송파구 올림픽로 114 서경빌딩 7층", 진입방법:"주차후 정문을 통해 엘베로 이동", 주차:"건물앞 대로변 정차", 출입절차:"없음", 세팅장소:"7층 휴게실", 세팅동선:"주차후 정문을 통해 엘베로 이동"},
-  {폴더명:"입셀", 업체명:"입셀", 계약:"정기", 상태:"활성", 타입1:"스페셜", 타입2:"이동급식", 운영요일:"월화수목금", 도착시간:"10:30이후", 식사시간:"12:00~13:00", 회수시간:"13시 바로", 식수:"40", 주소:"서울 서초구 반포대로 222 가톨릭성모병원 옴니버스파크", 진입방법:"성모병원 진입 후 옴니버스 파크", 주차:"지하주차장이용", 출입절차:"없음", 세팅장소:"1층?", 세팅동선:"지하주차장 주차 후 화물엘베를 통해 1층진입", 퇴식구:"사진참고", 특이사항:"근무지랑 같이 있어서 조용히 세팅"}
+  {폴더명:"엠브레인", 업체명:"엠브레인", 계약:"정기", 상태:"활성", 타입1:"베이직+", 타입2:"이동급식", 운영요일:"월화수목금", 끼니:"중식", 중식_도착:"10:30", 중식_배식:"12:00~13:00", 중식_회수:"13:00이후", 중식_식수:"80~60", 주소:"서울 서초구 명달로 9", 담당기사:"전지선", 진입주차:"지하주차장(지하4층 주차)", 출입절차:"없음", 세팅:"지하4층->엘베->1층 카페테리아", 퇴식회수:"1층", 특이사항:"배식도우미 1명"},
+  {폴더명:"삼성안과의원", 업체명:"삼성안과", 계약:"정기", 상태:"활성", 타입1:"베이직+", 타입2:"이동급식", 운영요일:"월화수목금", 끼니:"중식", 중식_도착:"09:00이후", 중식_배식:"12:00~14:00", 중식_회수:"14:00이후", 중식_식수:"25~28", 주소:"서울 송파구 올림픽로 114 서경빌딩 7층", 진입주차:"주차후 정문을 통해 엘베로 이동 / 건물앞 대로변 정차", 출입절차:"없음", 세팅:"주차후 정문을 통해 엘베로 이동 / 7층 휴게실"},
+  {폴더명:"입셀", 업체명:"입셀", 계약:"정기", 상태:"활성", 타입1:"스페셜", 타입2:"이동급식", 운영요일:"월화수목금", 끼니:"중식", 중식_도착:"10:30이후", 중식_배식:"12:00~13:00", 중식_회수:"13시 바로", 중식_식수:"40", 주소:"서울 서초구 반포대로 222 가톨릭성모병원 옴니버스파크", 진입주차:"성모병원 진입 후 옴니버스 파크 / 지하주차장이용", 출입절차:"없음", 세팅:"지하주차장 주차 후 화물엘베를 통해 1층진입 / 1층?", 퇴식회수:"사진참고", 특이사항:"근무지랑 같이 있어서 조용히 세팅"}
 ];
 
 /* ── 유틸 ── */
@@ -329,14 +346,56 @@ function toObjects(rows){
   return rows.slice(1)
     .filter(r=>r.some(v=>v && v.trim()))
     .map(r=>{ const o={}; head.forEach((h,i)=>o[h]=(r[i]||"").trim()); return o; })
-    .filter(o=>o.업체명 && !/^사진 폴더명|^화면에 보이는/.test(o.폴더명||""));
+    .filter(o=>{
+      if(!o.업체명) return false;
+      // 2행 안내문구 제거: 안내문에만 쓰이는 표현으로 판별
+      const f=(o.폴더명||"")+(o.업체명||"");
+      if(/사진 폴더명|기사님이 보는 이름|영문 소문자/.test(f)) return false;
+      return true;
+    });
 }
 
-let DATA=[], view="list", filter="all", query="", map=null, overlays=[], mapReady=false;
+let DATA=[], view="map", filter="all", query="", map=null, overlays=[], mapReady=false;
 
 /* ── 렌더링 ── */
+const MEALS=["조식","중식","석식"];
+function mealsOf(o){
+  const t=(o.끼니||"");
+  const named=MEALS.filter(m=>t.includes(m));
+  if(named.length) return named;
+  return MEALS.filter(m=>o[m+"_도착"]||o[m+"_배식"]||o[m+"_식수"]);
+}
+function parseDate(v){
+  const m=/(\d{4})\D+(\d{1,2})\D+(\d{1,2})/.exec(String(v||""));
+  return m ? new Date(+m[1], +m[2]-1, +m[3]) : null;
+}
+function isEnded(o){
+  const d=parseDate(o.종료일); if(!d) return false;
+  const t=new Date(); t.setHours(0,0,0,0);
+  return d < t;
+}
 function isOpenToday(o){ return (o.운영요일||"").includes(todayCh); }
-function isActive(o){ return (o.상태||"활성")!=="비활성"; }
+function isActive(o){ return (o.상태||"활성")!=="비활성" && !isEnded(o); }
+
+/* 끼니별 시간 줄 */
+function mealRows(o,big){
+  const ms=mealsOf(o); if(!ms.length) return "";
+  return ms.map(m=>{
+    const a=showTime(o[m+"_도착"]), b=showTime(o[m+"_배식"]), c=showTime(o[m+"_회수"]);
+    const n=o[m+"_식수"];
+    const g=gapMin(o[m+"_도착"],o[m+"_배식"]);
+    const bits=[];
+    if(a) bits.push(`<span>도착 <b>${a}</b></span>`);
+    if(b) bits.push(`<span>배식 <b>${b}</b></span>`);
+    if(c) bits.push(`<span>회수 <b>${c}</b></span>`);
+    if(big&&g) bits.push(`<span class="gapnote">세팅 <b>${g}분</b></span>`);
+    return `<div class="mealrow">
+      <span class="mtag">${m}</span>
+      <div class="mtimes">${bits.join("")}</div>
+      ${n?`<span class="mcount">${o.식수변동==="Y"?"~":""}${n}명</span>`:""}
+    </div>`;
+  }).join("");
+}
 
 function visible(){
   if(query){
@@ -352,7 +411,7 @@ function visible(){
     if(filter==="이동급식"||filter==="도시락") return isActive(o)&&o.타입2===filter;
     if(filter==="이벤트")   return isActive(o)&&o.계약==="이벤트";
     if(filter==="비활성")   return !isActive(o);
-    return isActive(o)&&o.담당기사===filter;
+    return isActive(o);
   });
 }
 
@@ -378,8 +437,7 @@ function gapMin(a,b){
 function tClass(v){ return showTime(v).length>7 ? ' style="font-size:13px"' : ""; }
 
 function buildFilters(){
-  const drivers=[...new Set(DATA.filter(isActive).map(o=>o.담당기사).filter(Boolean))].sort();
-  const list=[["all","전체"],...drivers.map(d=>[d,d]),["이동급식","이동급식"],["도시락","도시락"],["이벤트","이벤트"],["비활성","비활성"]];
+  const list=[["all","전체"],["이동급식","이동급식"],["도시락","도시락"],["이벤트","이벤트"],["비활성","비활성"]];
   document.getElementById("filters").innerHTML =
     list.map(([v,l])=>`<button class="chip${v===filter?" on":""}" data-f="${v}">${l}</button>`).join("");
 }
@@ -390,10 +448,8 @@ function cardHTML(o,i){
     const on=(o.운영요일||"").includes(d);
     return `<div class="d${on?" on":""}${d===todayCh?" now":""}">${d}</div>`;
   }).join(""):"";
-  const g=gapMin(o.도착시간,o.식사시간);
-  const meal = o.식수 ? (o.식수변동==="Y"?`변동 · <b>${o.식수}</b>명`:`<b>${o.식수}</b>명`) : "";
-  const rec = o.회수시간 ? `회수 <b>${showTime(o.회수시간)}</b>` : "";
-  const info = [meal,rec].filter(Boolean).join(" · ");
+  const rows=mealRows(o,false);
+  const tag = act ? (o.계약||"") : (isEnded(o) ? "종료" : "비활성");
   return `<button class="card${ev?" event":""}${o.계약?"":" plain"}${!act?" inactive":(hasDays&&!open?" off":"")}" data-i="${i}">
     <div class="cbody">
       <div class="crow1">
@@ -410,18 +466,11 @@ function cardHTML(o,i){
         ${o.담당기사?`<span class="b">${o.담당기사}</span>`:""}
           </div>
         </div>
-        ${act?(o.계약?`<div class="ctag">${o.계약}</div>`:""):`<div class="ctag">비활성</div>`}
+        ${tag?`<div class="ctag">${tag}</div>`:""}
       </div>
       ${hasDays?`<div class="days">${days}</div>`:""}
-      ${(o.도착시간||o.식사시간||info)?`<div class="strip">
-        ${(o.도착시간||o.식사시간)?`<div class="striprow">
-          <div><span class="tlabel">도착</span><span class="t"${tClass(o.도착시간)}>${showTime(o.도착시간)||"--:--"}</span></div>
-          <div class="gap">${g?`<span>세팅 ${g}분</span>`:""}</div>
-          <div style="text-align:right"><span class="tlabel">배식</span><span class="t"${tClass(o.식사시간)}>${showTime(o.식사시간)||"--:--"}</span></div>
-        </div>`:""}
-        ${info?`<div class="meals">${info}</div>`:""}
-        ${act&&hasDays&&!open?`<div class="restnote">오늘은 가지 않는 날입니다</div>`:""}
-      </div>`:""}
+      ${rows?`<div class="strip">${rows}</div>`:""}
+      ${act&&hasDays&&!open?`<div class="restnote">오늘은 가지 않는 날입니다</div>`:""}
     </div>
   </button>`;
 }
@@ -436,6 +485,27 @@ function renderList(){
 }
 
 /* ── 상세 ── */
+/* 유튜브/드라이브 주소를 재생 가능한 형태로 */
+function videoEmbed(u){
+  u=(u||"").trim(); if(!u) return "";
+  let m=/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([\w-]{6,})/.exec(u);
+  if(m) return `https://www.youtube.com/embed/${m[1]}`;
+  m=/drive\.google\.com\/file\/d\/([\w-]+)/.exec(u);
+  if(m) return `https://drive.google.com/file/d/${m[1]}/preview`;
+  return "";
+}
+function videoPanel(o){
+  const raw=(o.영상||"").trim();
+  if(!raw) return "";
+  const parts=raw.split(/[\s,]+/).filter(Boolean);
+  const items=parts.map(u=>{
+    const e=videoEmbed(u);
+    return e ? `<div class="vid"><iframe src="${e}" allow="fullscreen" allowfullscreen loading="lazy"></iframe></div>`
+             : `<a class="mapbtn alt" href="${u}" target="_blank" rel="noopener">영상 열기</a>`;
+  }).join("");
+  return `<div class="panel"><h3>현장 영상</h3>${items}</div>`;
+}
+
 function shot(folder,n,label){
   const src=`${PHOTO_BASE}${encodeURIComponent(folder)}/0${n}_${label}.jpg`;
   return `<figure class="shot">
@@ -452,8 +522,8 @@ function openDetail(i){
       .map(v=>(v||"").trim()).filter(Boolean).join(" · ");
 
   const steps=[
-    ["진입","진입방법"],["주차 · 하차","주차"],["출입 절차","출입절차"],
-    ["세팅 장소","세팅장소"],["세팅 동선","세팅동선"],["퇴식 · 회수","퇴식구"]
+    ["진입 · 주차","진입주차"],["출입 절차","출입절차"],
+    ["세팅","세팅"],["퇴식 · 회수","퇴식회수"]
   ].map(([label,key],n)=>`
     <div class="step">
       <div class="num">${String(n+1).padStart(2,"0")}</div>
@@ -470,18 +540,13 @@ function openDetail(i){
                        : `https://map.kakao.com/?q=${q}`;
   const rvUrl = hasGeo ? `https://map.kakao.com/link/roadview/${lat},${lng}`
                        : `https://map.kakao.com/?q=${q}`;
-  const g=gapMin(o.도착시간,o.식사시간);
 
   document.getElementById("dBody").innerHTML=`
-    ${(o.도착시간||o.식사시간||o.회수시간)?`<div class="panel">
-      <h3>시간</h3>
-      <div class="timegrid">
-        <div><span class="tlabel">도착</span><span class="t"${tClass(o.도착시간)}>${showTime(o.도착시간)||"-"}</span></div>
-        <div><span class="tlabel">배식</span><span class="t"${tClass(o.식사시간)}>${showTime(o.식사시간)||"-"}</span></div>
-        <div><span class="tlabel">회수</span><span class="t"${tClass(o.회수시간)}>${showTime(o.회수시간)||"-"}</span></div>
-      </div>
-      ${g?`<div class="meals">세팅 가능 시간 <b>${g}분</b></div>`:""}
-      <div class="meals">${o.식수?`${o.식수변동==="Y"?"식수 변동 · 평균 ":"식수 "}<b>${o.식수}</b>명`:""}${(o.식수&&o.운영요일)?" · ":""}${o.운영요일?`운영 ${(o.운영요일||"").split("").join(" ")}`:""}</div>
+    ${mealRows(o,true)?`<div class="panel">
+      <h3>시간 · 식수</h3>
+      ${mealRows(o,true)}
+      ${o.운영요일?`<div class="meals">운영 ${(o.운영요일||"").split("").join(" ")}</div>`:""}
+      ${o.종료일?`<div class="meals">종료 예정 <b>${o.종료일}</b></div>`:""}
     </div>`:""}
 
     <div class="panel">
@@ -501,6 +566,8 @@ function openDetail(i){
       </div>
     </div>
 
+    ${videoPanel(o)}
+
     ${o.특이사항?`<div class="panel note"><h3>꼭 확인</h3><p>${o.특이사항}</p></div>`:""}
 
     <div class="panel">
@@ -513,17 +580,45 @@ function openDetail(i){
 }
 
 /* ── 지도 ── */
+/* 주소 뒤 건물명·층수 등을 떼어내 인식률을 높인다 */
+function addrVariants(a){
+  a=(a||"").trim();
+  const out=[a];
+  // "... 114 서경빌딩 7층" → "... 114"
+  const m=/^(.*?\d+(?:-\d+)?)\s+\S.*$/.exec(a);
+  if(m && m[1]!==a) out.push(m[1]);
+  // 괄호 제거
+  const noParen=a.replace(/\(.*?\)/g,"").trim();
+  if(noParen && !out.includes(noParen)) out.push(noParen);
+  return out;
+}
+
+let geoNote="";
 function geocodeMissing(list){
-  const need=list.filter(o=>(!o.위도||!o.경도)&&o.주소&&!o._geoFail);
-  if(!need.length||!kakao.maps.services) return Promise.resolve();
+  const need=list.filter(o=>(!o.위도||!o.경도)&&o.주소&&!o._geoDone);
+  if(!need.length) return Promise.resolve();
+  if(!(kakao.maps.services&&kakao.maps.services.Geocoder)){
+    geoNote="주소 변환 기능(services)이 로드되지 않았습니다.";
+    return Promise.resolve();
+  }
   const g=new kakao.maps.services.Geocoder();
-  return Promise.all(need.map(o=>new Promise(res=>{
-    g.addressSearch(o.주소,(r,st)=>{
-      if(st===kakao.maps.services.Status.OK&&r[0]){ o.위도=r[0].y; o.경도=r[0].x; }
-      else o._geoFail=true;
-      res();
-    });
-  })));
+  const findOne=(o)=>new Promise(res=>{
+    const tries=addrVariants(o.주소);
+    let i=0;
+    const step=()=>{
+      if(i>=tries.length){ o._geoDone=true; res(); return; }
+      g.addressSearch(tries[i++],(r,st)=>{
+        if(st===kakao.maps.services.Status.OK&&r&&r[0]){
+          o.위도=r[0].y; o.경도=r[0].x; o._geoDone=true; res();
+        } else if(st===kakao.maps.services.Status.ERROR){
+          geoNote="주소 변환 요청이 거부되었습니다. 카카오 개발자 사이트에서 카카오맵 사용 설정과 도메인 등록을 확인하세요.";
+          o._geoDone=true; res();
+        } else step();
+      });
+    };
+    step();
+  });
+  return Promise.all(need.map(findOne));
 }
 
 async function renderMap(){
@@ -567,8 +662,10 @@ async function renderMap(){
   });
 
   const warn=document.getElementById("mapwarn");
-  warn.textContent = missing ? `주소를 찾지 못한 ${missing}곳은 지도에 없습니다. 시트에 위도·경도를 직접 넣어주세요.` : "";
-  warn.classList.toggle("hidden",!missing);
+  const msg = geoNote ? geoNote
+            : (missing ? `주소를 찾지 못한 ${missing}곳은 지도에 없습니다. 시트에 위도·경도를 직접 넣어주세요.` : "");
+  warn.textContent = msg;
+  warn.classList.toggle("hidden",!msg);
 
   setTimeout(()=>{
     map.relayout();
@@ -612,11 +709,21 @@ document.getElementById("todayLabel").textContent =
 async function start(){
   if(SHEET_CSV_URL){
     try{
-      const r=await fetch(SHEET_CSV_URL);
-      DATA=toObjects(parseCSV(await r.text()));
-    }catch(e){ DATA=SAMPLE; }
+      // 캐시 회피: 수정 후 바로 반영되도록
+      const sep = SHEET_CSV_URL.includes("?") ? "&" : "?";
+      const r=await fetch(SHEET_CSV_URL+sep+"_t="+Date.now(), {cache:"no-store"});
+      if(!r.ok) throw new Error(r.status);
+      const parsed=toObjects(parseCSV(await r.text()));
+      if(!parsed.length) throw new Error("empty");
+      DATA=parsed;
+    }catch(e){
+      DATA=SAMPLE;
+      const w=document.getElementById("mapwarn");
+      w.textContent="시트를 불러오지 못해 저장된 내용을 표시합니다. 인터넷 연결을 확인하세요.";
+      w.classList.remove("hidden");
+    }
   } else DATA=SAMPLE;
-  buildFilters(); renderList();
+  buildFilters(); renderList(); renderMap();
 }
 
 if(typeof kakao!=="undefined"&&kakao.maps) kakao.maps.load(start);
