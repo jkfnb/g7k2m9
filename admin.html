@@ -1,0 +1,578 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>급식연구소 업체 관리</title>
+
+<style>
+:root{
+  --ink:#12263A; --ink-soft:#4A5C6E; --paper:#EEF0EC; --card:#FFF;
+  --line:#D8DCD6; --regular:#1F6F5C; --event:#B8730B; --alert:#A32B18;
+  --shadow:0 1px 2px rgba(18,38,58,.08), 0 4px 14px rgba(18,38,58,.06);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{
+  font-family:Pretendard,'Apple SD Gothic Neo','Noto Sans KR',system-ui,sans-serif;
+  background:var(--paper);color:var(--ink);font-size:15px;line-height:1.5;
+  padding-bottom:60px;
+}
+button,input,textarea,select{font:inherit;color:inherit}
+button{background:none;border:none;cursor:pointer}
+
+.top{
+  position:sticky;top:0;z-index:50;background:var(--ink);color:#fff;
+  padding:calc(12px + env(safe-area-inset-top)) 14px 12px;
+  display:flex;align-items:center;gap:10px;
+}
+.top h1{font-size:16px;font-weight:800;letter-spacing:-.02em}
+.top .sub{font-size:11px;color:#9FB4C7;font-weight:600;margin-top:1px}
+.topbtn{
+  margin-left:auto;background:#fff;color:var(--ink);
+  padding:8px 14px;border-radius:9px;font-size:14px;font-weight:800;
+}
+.back{font-size:22px;line-height:1;padding:2px 6px;margin-left:-6px;color:#fff}
+
+.wrap{max-width:720px;margin:0 auto;padding:12px}
+
+/* 로그인 */
+.login{max-width:400px;margin:60px auto;padding:0 16px}
+.login .panel{padding:20px}
+.login h2{font-size:18px;font-weight:800;margin-bottom:6px}
+.login p{font-size:13px;color:var(--ink-soft);margin-bottom:16px}
+
+.panel{background:var(--card);border-radius:13px;box-shadow:var(--shadow);padding:14px;margin-bottom:11px}
+.panel h3{
+  font-size:11.5px;font-weight:800;color:var(--ink-soft);
+  letter-spacing:.06em;margin-bottom:11px;
+}
+
+label{display:block;margin-bottom:12px}
+label:last-child{margin-bottom:0}
+.lb{display:block;font-size:12.5px;font-weight:800;color:var(--ink-soft);margin-bottom:5px}
+.hint{font-size:11.5px;color:#9AA39A;font-weight:600;margin-top:4px;line-height:1.4}
+input[type=text],input[type=password],input[type=date],textarea,select{
+  width:100%;padding:11px 12px;border-radius:9px;
+  border:1.5px solid var(--line);background:#F9FAF8;
+  font-size:16px;font-weight:500;outline:none;
+}
+input:focus,textarea:focus,select:focus{border-color:var(--ink);background:#fff}
+textarea{min-height:76px;resize:vertical;line-height:1.5}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+
+/* 요일 선택 */
+.daypick{display:flex;gap:6px}
+.daypick button{
+  flex:1;padding:10px 0;border-radius:9px;background:#F0F2EF;
+  font-size:14px;font-weight:800;color:#B6BDB6;border:1.5px solid transparent;
+}
+.daypick button.on{background:var(--ink);color:#fff}
+
+/* 사진 */
+.photos{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px}
+.slot{position:relative}
+.slot .box{
+  position:relative;width:100%;aspect-ratio:4/3;border-radius:10px;
+  background:#F0F2EF;border:1.5px dashed var(--line);
+  display:grid;place-items:center;overflow:hidden;cursor:pointer;
+}
+.slot .box img{width:100%;height:100%;object-fit:cover}
+.slot .box .ph{font-size:22px;color:#B6BDB6;font-weight:400}
+.slot .cap{
+  display:block;text-align:center;font-size:11.5px;font-weight:700;
+  color:var(--ink-soft);margin-top:5px;
+}
+.slot .del{
+  position:absolute;top:5px;right:5px;width:24px;height:24px;border-radius:50%;
+  background:rgba(18,38,58,.8);color:#fff;font-size:13px;line-height:1;
+  display:none;place-items:center;
+}
+.slot.has .del{display:grid}
+.slot.has .box{border-style:solid}
+.slot input[type=file]{display:none}
+
+/* 목록 */
+.listitem{
+  display:flex;align-items:center;gap:11px;width:100%;text-align:left;
+  padding:12px;border-bottom:1px solid var(--line);
+  border-left:4px solid var(--regular);background:var(--card);
+}
+.listitem:first-child{border-radius:13px 13px 0 0}
+.listitem:last-child{border-bottom:none;border-radius:0 0 13px 13px}
+.listitem.event{border-left-color:var(--event)}
+.listitem.off{opacity:.55}
+.listitem:active{background:#F3F5F2}
+.li-thumb{
+  flex:0 0 44px;height:44px;border-radius:8px;overflow:hidden;
+  background:#E4E8E3;display:grid;place-items:center;
+}
+.li-thumb img{width:100%;height:100%;object-fit:cover}
+.li-thumb span{font-size:15px;font-weight:800;color:#A9B2A9}
+.li-body{flex:1;min-width:0}
+.li-name{font-size:15.5px;font-weight:800;letter-spacing:-.02em}
+.li-sub{
+  font-size:12px;color:var(--ink-soft);margin-top:2px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.li-meta{font-size:11.5px;color:#9AA39A;font-weight:700;margin-top:3px}
+.li-chev{font-size:20px;color:#C2CAC2}
+.cardsbox{background:var(--card);border-radius:13px;box-shadow:var(--shadow);overflow:hidden}
+
+.btn{
+  display:block;width:100%;padding:14px;border-radius:11px;
+  background:var(--ink);color:#fff;font-size:16px;font-weight:800;text-align:center;
+}
+.btn.ghost{background:#fff;color:var(--ink);border:1.5px solid var(--ink)}
+.btn.danger{background:#fff;color:var(--alert);border:1.5px solid var(--alert)}
+.btn[disabled]{opacity:.5}
+.btnrow{display:grid;gap:9px;margin-top:14px}
+
+.msg{
+  padding:11px 13px;border-radius:10px;font-size:13.5px;font-weight:700;
+  margin-bottom:11px;line-height:1.45;
+}
+.msg.ok{background:#E3F0E4;color:#2A6B33}
+.msg.err{background:#FBE9E7;color:var(--alert)}
+.msg.info{background:#FFF6E8;color:#8A5606}
+.hidden{display:none !important}
+.empty{text-align:center;padding:44px 20px;color:var(--ink-soft);font-size:14px;font-weight:600}
+.spin{
+  display:inline-block;width:15px;height:15px;border-radius:50%;vertical-align:-2px;
+  border:2px solid rgba(255,255,255,.35);border-top-color:#fff;
+  animation:sp .7s linear infinite;margin-right:7px;
+}
+@keyframes sp{to{transform:rotate(360deg)}}
+</style>
+
+<div id="loginView" class="login">
+  <div class="panel">
+    <h2>업체 관리</h2>
+    <p>급식연구소 현장 매뉴얼 관리자 페이지입니다.</p>
+    <div id="loginMsg"></div>
+    <label>
+      <span class="lb">비밀번호</span>
+      <input type="password" id="pw" autocomplete="current-password">
+    </label>
+    <button class="btn" id="loginBtn">들어가기</button>
+  </div>
+</div>
+
+<div id="app" class="hidden">
+  <div class="top">
+    <button class="back hidden" id="back">←</button>
+    <div>
+      <h1 id="title">업체 관리</h1>
+      <div class="sub" id="subtitle"></div>
+    </div>
+    <button class="topbtn" id="newBtn">+ 새 업체</button>
+  </div>
+
+  <div class="wrap">
+    <div id="msg"></div>
+
+    <!-- 목록 -->
+    <div id="listView">
+      <div class="cardsbox" id="list"></div>
+    </div>
+
+    <!-- 편집 -->
+    <div id="editView" class="hidden">
+      <div class="panel">
+        <h3>기본 정보</h3>
+        <label>
+          <span class="lb">업체명 *</span>
+          <input type="text" id="f_업체명">
+          <span class="hint">사진 폴더 이름으로도 쓰입니다. 카톡에서 부르는 이름과 똑같이 적으세요.</span>
+        </label>
+        <label>
+          <span class="lb">주소</span>
+          <input type="text" id="f_주소">
+          <span class="hint">도로명 주소를 넣으면 지도에 자동으로 표시됩니다.</span>
+        </label>
+        <div class="two">
+          <label>
+            <span class="lb">상태</span>
+            <select id="f_상태"><option>활성</option><option>비활성</option></select>
+          </label>
+          <label>
+            <span class="lb">종료일</span>
+            <input type="date" id="f_종료일">
+            <span class="hint">이벤트 업체만. 지나면 자동으로 숨겨집니다.</span>
+          </label>
+        </div>
+        <div class="two">
+          <label>
+            <span class="lb">타입1</span>
+            <select id="f_타입1">
+              <option value="">선택</option>
+              <option>베이직</option><option>베이직+</option><option>스페셜</option>
+            </select>
+          </label>
+          <label>
+            <span class="lb">타입2</span>
+            <select id="f_타입2">
+              <option value="">선택</option>
+              <option>이동급식</option><option>도시락</option>
+              <option>이동급식+샐러드</option><option>도시락+샐러드</option>
+            </select>
+          </label>
+        </div>
+        <label>
+          <span class="lb">운영 요일</span>
+          <div class="daypick" id="daypick"></div>
+        </label>
+      </div>
+
+      <div class="panel">
+        <h3>시간 · 식수</h3>
+        <div class="three">
+          <label><span class="lb">도착</span><input type="text" id="f_도착" placeholder="10:30"></label>
+          <label><span class="lb">배식</span><input type="text" id="f_배식" placeholder="12:00~13:00"></label>
+          <label><span class="lb">회수</span><input type="text" id="f_회수" placeholder="13:00 이후"></label>
+        </div>
+        <label>
+          <span class="lb">식수</span>
+          <input type="text" id="f_식수" placeholder="80  또는  60~80">
+          <span class="hint">물결(~)을 넣으면 변동으로 표시됩니다.</span>
+        </label>
+        <label>
+          <span class="lb">추가 끼니</span>
+          <input type="text" id="f_추가끼니" placeholder="석식 16:30 도착 / 18:00 배식 / 40명">
+          <span class="hint">석식이나 조식이 있을 때만 적으세요. 없으면 비워두면 됩니다.</span>
+        </label>
+      </div>
+
+      <div class="panel">
+        <h3>현장 절차</h3>
+        <label>
+          <span class="lb">진입 · 주차</span>
+          <textarea id="f_진입주차" placeholder="차를 어디로 넣고 어디에 대는지"></textarea>
+        </label>
+        <label>
+          <span class="lb">출입 절차</span>
+          <textarea id="f_출입절차" placeholder="경비실 신고, 출입증 등. 없으면 '없음'"></textarea>
+        </label>
+        <label>
+          <span class="lb">세팅</span>
+          <textarea id="f_세팅" placeholder="짐을 어떤 경로로 옮겨 어디에 차리는지"></textarea>
+        </label>
+        <label>
+          <span class="lb">퇴식 · 회수</span>
+          <textarea id="f_퇴식회수" placeholder="퇴식구 위치, 잔반 처리, 회수 방법"></textarea>
+        </label>
+        <label>
+          <span class="lb">특이사항</span>
+          <textarea id="f_특이사항" placeholder="시간 엄수, 소음 주의, 도우미 인원 등"></textarea>
+        </label>
+      </div>
+
+      <div class="panel">
+        <h3>현장 사진</h3>
+        <div class="photos" id="photos"></div>
+        <div class="hint" style="margin-top:10px">
+          사진을 눌러 촬영하거나 앨범에서 고르세요. 자동으로 용량을 줄여 저장합니다.
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>영상 (선택)</h3>
+        <label>
+          <input type="text" id="f_영상" placeholder="유튜브 또는 드라이브 주소">
+          <span class="hint">복잡한 동선처럼 사진으로 설명이 어려울 때만 쓰세요.</span>
+        </label>
+      </div>
+
+      <div class="btnrow">
+        <button class="btn" id="saveBtn">저장</button>
+        <button class="btn danger hidden" id="delBtn">이 업체 삭제</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════
+   설정 — 앱스 스크립트 배포 주소를 여기에 넣으세요
+   ══════════════════════════════════════════════ */
+const API_URL = "https://script.google.com/macros/s/AKfycbw4PfitRIHXYyyISQ8cG-4QrIrX9oZsxuKwQWkHPqDHqASeX8hCCLGwFjWqXNn49zvH/exec";
+
+const SLOTS = [
+  ["건물","건물 외관"],["진입","진입로"],["주차","주차 · 하차"],
+  ["세팅","세팅 장소"],["배식대","배식대 완성"],["퇴식구","퇴식구"]
+];
+const WEEK = ["월","화","수","목","금","토","일"];
+const FIELDS = ["업체명","주소","상태","종료일","타입1","타입2","운영요일",
+                "도착","배식","회수","식수","추가끼니",
+                "진입주차","출입절차","세팅","퇴식회수","특이사항","영상"];
+
+let TOKEN = "", ROWS = [], current = null, days = new Set(), photoBuf = {};
+
+const $ = id => document.getElementById(id);
+const driveUrl = id => `https://drive.google.com/thumbnail?id=${id}&sz=w800`;
+
+function parsePhotos(s){
+  const o = {};
+  String(s||"").split("|").forEach(p=>{
+    const i = p.indexOf(":");
+    if(i>0){ const k=p.slice(0,i).trim(), v=p.slice(i+1).trim(); if(k&&v) o[k]=v; }
+  });
+  return o;
+}
+
+function show(el, text, kind){
+  if(!text){ el.innerHTML=""; return; }
+  el.innerHTML = `<div class="msg ${kind||'info'}">${text}</div>`;
+}
+
+/* ── 통신 ── */
+async function api(action, data){
+  if(!API_URL) throw new Error("API_URL이 설정되지 않았습니다");
+  if(action==="list"){
+    const r = await fetch(API_URL + "?action=list&_t=" + Date.now());
+    return r.json();
+  }
+  const r = await fetch(API_URL, {
+    method:"POST",
+    headers:{"Content-Type":"text/plain;charset=utf-8"},
+    body: JSON.stringify({token:TOKEN, action, data})
+  });
+  return r.json();
+}
+
+/* ── 로그인 ── */
+$("loginBtn").onclick = async () => {
+  const pw = $("pw").value.trim();
+  if(!pw){ show($("loginMsg"),"비밀번호를 입력하세요","err"); return; }
+  TOKEN = pw;
+  $("loginBtn").innerHTML = '<span class="spin"></span>확인 중';
+  try{
+    const res = await api("auth", {});
+    if(!res.ok){
+      show($("loginMsg"), res.error || "비밀번호가 맞지 않습니다", "err");
+      $("loginBtn").textContent="들어가기"; return;
+    }
+    try{ localStorage.setItem("jk_admin_pw", pw); }catch(e){}
+    $("loginView").classList.add("hidden");
+    $("app").classList.remove("hidden");
+    loadList();
+  }catch(err){
+    show($("loginMsg"), "연결에 실패했습니다. API 주소를 확인하세요.", "err");
+    $("loginBtn").textContent="들어가기";
+  }
+};
+$("pw").addEventListener("keydown", e=>{ if(e.key==="Enter") $("loginBtn").click(); });
+try{
+  const saved = localStorage.getItem("jk_admin_pw");
+  if(saved) $("pw").value = saved;
+}catch(e){}
+
+/* ── 목록 ── */
+async function loadList(){
+  $("list").innerHTML = `<div class="empty">불러오는 중…</div>`;
+  try{
+    const res = await api("list");
+    ROWS = res.rows || [];
+    renderList();
+  }catch(err){
+    $("list").innerHTML = `<div class="empty">목록을 불러오지 못했습니다.</div>`;
+  }
+}
+
+function renderList(){
+  $("subtitle").textContent = `${ROWS.length}곳 등록됨`;
+  if(!ROWS.length){
+    $("list").innerHTML = `<div class="empty">아직 등록된 업체가 없습니다.<br>우측 상단 + 새 업체를 눌러 시작하세요.</div>`;
+    return;
+  }
+  $("list").innerHTML = ROWS.map((o,i)=>{
+    const ph = parsePhotos(o["사진"]);
+    const ev = !!(o["종료일"]||"").trim();
+    const off = (o["상태"]||"활성")==="비활성";
+    const bits = [o["타입1"], o["타입2"], (o["운영요일"]||"")].filter(Boolean).join(" · ");
+    return `<button class="listitem${ev?" event":""}${off?" off":""}" data-i="${i}">
+      <div class="li-thumb">
+        ${ph["건물"] ? `<img src="${driveUrl(ph["건물"])}" alt="">`
+                     : `<span>${(o["업체명"]||"?").slice(0,1)}</span>`}
+      </div>
+      <div class="li-body">
+        <div class="li-name">${o["업체명"]||""}</div>
+        ${o["주소"]?`<div class="li-sub">${o["주소"]}</div>`:""}
+        <div class="li-meta">${bits}${off?" · 비활성":""}${ev?" · 종료 "+o["종료일"]:""}</div>
+      </div>
+      <div class="li-chev">›</div>
+    </button>`;
+  }).join("");
+}
+
+$("list").addEventListener("click", e=>{
+  const b = e.target.closest(".listitem");
+  if(b) openEdit(ROWS[+b.dataset.i]);
+});
+
+/* ── 편집 ── */
+function buildDayPick(){
+  $("daypick").innerHTML = WEEK.slice(0,6).map(d=>
+    `<button type="button" data-d="${d}">${d}</button>`).join("");
+}
+buildDayPick();
+$("daypick").addEventListener("click", e=>{
+  const b = e.target.closest("button"); if(!b) return;
+  const d = b.dataset.d;
+  if(days.has(d)) days.delete(d); else days.add(d);
+  syncDays();
+});
+function syncDays(){
+  [...$("daypick").children].forEach(b=>
+    b.classList.toggle("on", days.has(b.dataset.d)));
+}
+
+function buildPhotos(){
+  $("photos").innerHTML = SLOTS.map(([key,cap])=>`
+    <div class="slot" data-k="${key}">
+      <div class="box"><span class="ph">＋</span></div>
+      <button type="button" class="del" aria-label="삭제">✕</button>
+      <span class="cap">${cap}</span>
+      <input type="file" accept="image/*" capture="environment">
+    </div>`).join("");
+
+  $("photos").querySelectorAll(".slot").forEach(slot=>{
+    const input = slot.querySelector("input");
+    slot.querySelector(".box").onclick = ()=> input.click();
+    slot.querySelector(".del").onclick = (e)=>{
+      e.stopPropagation();
+      photoBuf[slot.dataset.k] = "";
+      slot.classList.remove("has");
+      slot.querySelector(".box").innerHTML = `<span class="ph">＋</span>`;
+    };
+    input.onchange = async ()=>{
+      const f = input.files[0]; if(!f) return;
+      const dataUrl = await shrink(f);
+      photoBuf[slot.dataset.k] = dataUrl;
+      slot.classList.add("has");
+      slot.querySelector(".box").innerHTML = `<img src="${dataUrl}" alt="">`;
+      input.value = "";
+    };
+  });
+}
+buildPhotos();
+
+/* 업로드 전 용량 축소 */
+function shrink(file, max=1400, quality=.72){
+  return new Promise((res, rej)=>{
+    const img = new Image();
+    const rd = new FileReader();
+    rd.onload = ()=> img.src = rd.result;
+    rd.onerror = rej;
+    img.onload = ()=>{
+      let {width:w, height:h} = img;
+      if(w>max || h>max){
+        const r = Math.min(max/w, max/h);
+        w = Math.round(w*r); h = Math.round(h*r);
+      }
+      const cv = document.createElement("canvas");
+      cv.width = w; cv.height = h;
+      cv.getContext("2d").drawImage(img, 0, 0, w, h);
+      res(cv.toDataURL("image/jpeg", quality));
+    };
+    img.onerror = rej;
+    rd.readAsDataURL(file);
+  });
+}
+
+function openEdit(o){
+  current = o || null;
+  photoBuf = {};
+  days = new Set(((o&&o["운영요일"])||"").split("").filter(d=>WEEK.includes(d)));
+  syncDays();
+
+  FIELDS.forEach(k=>{
+    const el = $("f_"+k); if(!el) return;
+    el.value = o ? (o[k]||"") : (k==="상태" ? "활성" : "");
+  });
+
+  const ph = o ? parsePhotos(o["사진"]) : {};
+  $("photos").querySelectorAll(".slot").forEach(slot=>{
+    const id = ph[slot.dataset.k];
+    if(id){
+      slot.classList.add("has");
+      slot.querySelector(".box").innerHTML = `<img src="${driveUrl(id)}" alt="">`;
+    }else{
+      slot.classList.remove("has");
+      slot.querySelector(".box").innerHTML = `<span class="ph">＋</span>`;
+    }
+  });
+
+  $("title").textContent = o ? "업체 수정" : "새 업체 등록";
+  $("subtitle").textContent = o ? (o["업체명"]||"") : "";
+  $("listView").classList.add("hidden");
+  $("editView").classList.remove("hidden");
+  $("back").classList.remove("hidden");
+  $("newBtn").classList.add("hidden");
+  $("delBtn").classList.toggle("hidden", !o);
+  show($("msg"), "");
+  window.scrollTo(0,0);
+}
+
+function closeEdit(){
+  current = null;
+  $("title").textContent = "업체 관리";
+  $("listView").classList.remove("hidden");
+  $("editView").classList.add("hidden");
+  $("back").classList.add("hidden");
+  $("newBtn").classList.remove("hidden");
+  renderList();
+  window.scrollTo(0,0);
+}
+
+$("newBtn").onclick = ()=> openEdit(null);
+$("back").onclick   = ()=> closeEdit();
+
+$("saveBtn").onclick = async ()=>{
+  const name = $("f_업체명").value.trim();
+  if(!name){ show($("msg"), "업체명을 입력하세요", "err"); window.scrollTo(0,0); return; }
+
+  const data = { photos: photoBuf };
+  FIELDS.forEach(k=>{ const el=$("f_"+k); if(el) data[k]=el.value.trim(); });
+  data["운영요일"] = WEEK.slice(0,6).filter(d=>days.has(d)).join("");
+  if(current) data._row = current._row;
+
+  $("saveBtn").disabled = true;
+  $("saveBtn").innerHTML = '<span class="spin"></span>저장 중';
+  try{
+    const res = await api("save", data);
+    if(res.ok){
+      await loadList();
+      closeEdit();
+      show($("msg"), `${name} 저장이 완료되었습니다`, "ok");
+      setTimeout(()=>show($("msg"),""), 4000);
+    }else{
+      show($("msg"), res.error || "저장에 실패했습니다", "err");
+      window.scrollTo(0,0);
+    }
+  }catch(err){
+    show($("msg"), "저장에 실패했습니다. 인터넷 연결을 확인하세요.", "err");
+    window.scrollTo(0,0);
+  }
+  $("saveBtn").disabled = false;
+  $("saveBtn").textContent = "저장";
+};
+
+$("delBtn").onclick = async ()=>{
+  if(!current) return;
+  const name = current["업체명"];
+  if(!confirm(`${name}을(를) 삭제합니다.\n사진도 함께 삭제되며 되돌릴 수 없습니다.\n\n계속하시려면 확인을 누르세요.`)) return;
+  $("delBtn").disabled = true;
+  try{
+    const res = await api("delete", {_row: current._row, 업체명: name});
+    if(res.ok){
+      await loadList(); closeEdit();
+      show($("msg"), `${name} 삭제가 완료되었습니다`, "ok");
+      setTimeout(()=>show($("msg"),""), 4000);
+    }else{
+      show($("msg"), res.error || "삭제에 실패했습니다", "err");
+    }
+  }catch(err){
+    show($("msg"), "삭제에 실패했습니다", "err");
+  }
+  $("delBtn").disabled = false;
+};
+</script>
